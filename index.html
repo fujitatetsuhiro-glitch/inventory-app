@@ -164,6 +164,7 @@
 
       <section class="card">
         <h2>履歴</h2>
+        <button id="downloadCsv" type="button" style="margin-bottom: 12px;">CSVダウンロード</button>
         <div id="historyWrap">
           <p class="empty">まだ履歴がありません。</p>
         </div>
@@ -175,6 +176,7 @@
     const form = document.getElementById('stockForm');
     const inventoryWrap = document.getElementById('inventoryWrap');
     const historyWrap = document.getElementById('historyWrap');
+    const downloadCsvButton = document.getElementById('downloadCsv');
 
     const records = [];
 
@@ -195,6 +197,44 @@
         stockMap[r.name] += r.type === 'in' ? r.quantity : -r.quantity;
       }
       return stockMap;
+    };
+
+
+
+    const escapeCsv = (value) => {
+      const text = String(value ?? '');
+      if (/[",\n]/.test(text)) {
+        return `"${text.replace(/"/g, '""')}"`;
+      }
+      return text;
+    };
+
+    const downloadCsv = () => {
+      if (records.length === 0) {
+        alert('ダウンロードできる履歴がありません。');
+        return;
+      }
+
+      const header = ['日時', '商品名', '種別', '数量'];
+      const lines = records.map((record) => [
+        record.time,
+        record.name,
+        record.type === 'in' ? '入庫' : '出庫',
+        record.quantity
+      ]);
+      const csvBody = [header, ...lines]
+        .map((row) => row.map((cell) => escapeCsv(cell)).join(','))
+        .join('\n');
+      const bom = '\uFEFF';
+      const blob = new Blob([bom + csvBody], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `inventory-history-${formatDateTime(new Date()).replace(/[ :]/g, '-')}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     };
 
     const renderInventory = () => {
@@ -282,6 +322,8 @@
       form.elements.quantity.value = '1';
       form.elements.name.focus();
     });
+
+    downloadCsvButton.addEventListener('click', downloadCsv);
 
     form.elements.quantity.value = '1';
   </script>
