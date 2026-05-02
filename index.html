@@ -210,11 +210,6 @@
     };
 
     const downloadCsv = () => {
-      if (records.length === 0) {
-        alert('ダウンロードできる履歴がありません。');
-        return;
-      }
-
       const header = ['日時', '商品名', '種別', '数量'];
       const lines = records.map((record) => [
         record.time,
