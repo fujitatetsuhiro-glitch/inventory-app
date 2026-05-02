@@ -178,7 +178,37 @@
     const historyWrap = document.getElementById('historyWrap');
     const downloadCsvButton = document.getElementById('downloadCsv');
 
+    const STORAGE_KEY = 'inventory-records';
     const records = [];
+
+    const saveRecords = () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    };
+
+    const loadRecords = () => {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+
+      try {
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return;
+
+        for (const item of parsed) {
+          const name = String(item?.name || '').trim();
+          const quantity = Number(item?.quantity);
+          const type = item?.type;
+          const time = String(item?.time || '');
+
+          if (!name || !Number.isInteger(quantity) || quantity <= 0) continue;
+          if (!['in', 'out'].includes(type)) continue;
+          if (!time) continue;
+
+          records.push({ name, quantity, type, time });
+        }
+      } catch (_) {
+        // 保存データが壊れている場合は読み込みをスキップ
+      }
+    };
 
     const formatDateTime = (date) => {
       const y = date.getFullYear();
@@ -310,6 +340,7 @@
         time: formatDateTime(new Date())
       });
 
+      saveRecords();
       renderInventory();
       renderHistory();
       form.reset();
@@ -319,6 +350,10 @@
     });
 
     downloadCsvButton.addEventListener('click', downloadCsv);
+
+    loadRecords();
+    renderInventory();
+    renderHistory();
 
     form.elements.quantity.value = '1';
   </script>
