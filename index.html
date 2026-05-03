@@ -291,6 +291,13 @@
       return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
     };
 
+
+    const normalizeDigits = (value) => {
+      return String(value ?? '')
+        .trim()
+        .replace(/[０-９]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 0xFEE0));
+    };
+
     const calculateInventory = () => {
       const stockMap = {};
       for (const r of records) {
@@ -401,7 +408,7 @@
 
       const formData = new FormData(form);
       const name = String(formData.get('name') || '').trim();
-      const quantity = Number(formData.get('quantity'));
+      const quantity = Number(normalizeDigits(formData.get('quantity')));
       const type = String(formData.get('type'));
 
       if (!name || !Number.isInteger(quantity) || quantity <= 0 || !['in', 'out'].includes(type)) {
