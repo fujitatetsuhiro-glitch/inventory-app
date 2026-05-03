@@ -78,6 +78,8 @@
       border-radius: 8px;
       font-size: 0.95rem;
       background: white;
+      appearance: none;
+      -webkit-appearance: none;
     }
 
     button {
@@ -159,6 +161,15 @@
         gap: 12px;
         padding: 6px 0;
         border: none;
+        word-break: break-word;
+      }
+
+      td::before {
+        flex-shrink: 0;
+      }
+
+      td > span {
+        text-align: right;
       }
 
       td::before {
@@ -195,7 +206,7 @@
 
           <div>
             <label for="quantity">数量</label>
-            <input id="quantity" name="quantity" type="number" min="1" step="1" required />
+            <input id="quantity" name="quantity" type="number" inputmode="numeric" min="1" step="1" required />
           </div>
 
           <div>
@@ -234,6 +245,9 @@
     const inventoryWrap = document.getElementById('inventoryWrap');
     const historyWrap = document.getElementById('historyWrap');
     const downloadCsvButton = document.getElementById('downloadCsv');
+    const nameInput = document.getElementById('name');
+    const quantityInput = document.getElementById('quantity');
+    const typeSelect = document.getElementById('type');
 
     const STORAGE_KEY = 'inventory-records';
     const records = [];
@@ -330,8 +344,8 @@
 
       const rows = names.map(name => `
         <tr>
-          <td data-label="商品名">${name}</td>
-          <td data-label="現在庫">${stockMap[name]}</td>
+          <td data-label="商品名"><span>${name}</span></td>
+          <td data-label="現在庫"><span>${stockMap[name]}</span></td>
         </tr>
       `).join('');
 
@@ -358,10 +372,10 @@
 
       const rows = [...records].reverse().map(r => `
         <tr>
-          <td data-label="日時">${r.time}</td>
-          <td data-label="商品名">${r.name}</td>
-          <td data-label="種別" class="${r.type === 'in' ? 'type-in' : 'type-out'}">${r.type === 'in' ? '入庫' : '出庫'}</td>
-          <td data-label="数量">${r.quantity}</td>
+          <td data-label="日時"><span>${r.time}</span></td>
+          <td data-label="商品名"><span>${r.name}</span></td>
+          <td data-label="種別" class="${r.type === 'in' ? 'type-in' : 'type-out'}"><span>${r.type === 'in' ? '入庫' : '出庫'}</span></td>
+          <td data-label="数量"><span>${r.quantity}</span></td>
         </tr>
       `).join('');
 
@@ -405,9 +419,12 @@
       renderInventory();
       renderHistory();
       form.reset();
-      form.elements.type.value = 'in';
-      form.elements.quantity.value = '1';
-      form.elements.name.focus();
+      typeSelect.value = 'in';
+      quantityInput.value = '1';
+
+      if (window.matchMedia('(min-width: 641px)').matches) {
+        nameInput.focus();
+      }
     });
 
     downloadCsvButton.addEventListener('click', downloadCsv);
@@ -416,7 +433,7 @@
     renderInventory();
     renderHistory();
 
-    form.elements.quantity.value = '1';
+    quantityInput.value = '1';
   </script>
 </body>
 </html>
